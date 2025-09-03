@@ -1,10 +1,11 @@
-import { commands, window, ExtensionContext, workspace, Uri, TextDocument } from 'vscode';
+import { commands, window, ExtensionContext, workspace, Uri, TextDocument, WorkspaceFolder } from 'vscode';
 import { PreviewPanelScope } from './preview-panel-scope';
 import generateContext from './context-generator/context-generator';
 import { Subject, race } from 'rxjs';
 import { debounceTime, filter, take, repeat } from 'rxjs/operators';
 import { partialsRegistered, findAndRegisterPartials, watchForPartials } from './partials';
 import { helpersRegistered, findAndRegisterHelpers, watchForHelpers } from './helpers';
+import { basename, dirname } from 'path';
 
 const panels: PreviewPanelScope[] = [];
 export const showErrorMessage = new Subject<{ message: string; panel: PreviewPanelScope } | null>();
@@ -88,6 +89,18 @@ async function openPreviewPanelByUri(uri: Uri) {
 	await openPreviewPanelByDocument(doc);
 }
 
+function getCurrentDocFolder(uri: Uri): WorkspaceFolder {
+	const workDir = dirname(uri.fsPath);
+
+	const directoryUri = Uri.file(workDir);
+
+	return {
+		uri: directoryUri,
+		name: basename(workDir),
+		index: 0,
+	};
+}
+
 async function openPreviewPanelByDocument(doc: TextDocument) {
 	const existingPanel = panels.find((x) => x.editorFilePath() === doc.fileName);
 
@@ -97,7 +110,7 @@ async function openPreviewPanelByDocument(doc: TextDocument) {
 		panels.splice(panels.indexOf(existingPanel), 1);
 	}
 
-	const workspaceRoot = workspace.getWorkspaceFolder(doc.uri);
+	const workspaceRoot = getCurrentDocFolder(doc.uri);
 
 	if (!workspaceRoot) {
 		return;

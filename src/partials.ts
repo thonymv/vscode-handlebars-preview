@@ -22,7 +22,7 @@ export async function findAndRegisterPartials(workspaceFolder: WorkspaceFolder) 
 	const foundTemplates = hbsFiles
 		.map((x) => ({
 			filePath: x.fsPath,
-			workspaceRoot: workspace.getWorkspaceFolder(x),
+			workspaceRoot: workspaceFolder,
 		}))
 		.filter((x) => x.workspaceRoot)
 		.map((x) => ({
