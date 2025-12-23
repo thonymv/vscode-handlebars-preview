@@ -2,6 +2,8 @@ import * as path from 'path';
 
 const abbreviatedNames: string[] = [];
 
+const partialsFolder = 'partials/';
+
 export function generatePartialName(filePath: string, workspaceRoot: string) {
 	const extension = path.extname(filePath);
 	const relativePath = path.relative(workspaceRoot, filePath);
@@ -42,11 +44,16 @@ export function generatePartialNames(files: { filePath: string; workspaceRoot: s
 }
 
 export function partialNameCanBeAbbreviated(partialName: string) {
-	return partialName.toLowerCase().startsWith('partials/');
+	return partialName.toLowerCase().includes(partialsFolder);
 }
 
 export function abbreviatePartialName(partialName: string) {
-	return partialNameCanBeAbbreviated(partialName) ? partialName.substring(9) : partialName;
+	if (!partialNameCanBeAbbreviated(partialName)) return partialName;
+
+	const partialsIndex = partialName.toLowerCase().lastIndexOf(partialsFolder);
+	const partialsFolderLength = partialsFolder.length;
+
+	return partialName.substring(partialsIndex + partialsFolderLength);
 }
 
 export function partialHasAbbreviatedAlias(fullName: string) {
